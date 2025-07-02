@@ -3,10 +3,11 @@ pipeline {
 
     options {
         skipDefaultCheckout(true)
+        timestamps()
     }
 
     environment {
-        COMPOSE_CMD = 'docker compose' // use 'docker-compose' if using older binary
+        COMPOSE_CMD = 'docker compose' // Use 'docker-compose' if using older CLI
     }
 
     stages {
@@ -21,7 +22,7 @@ pipeline {
         stage('Install Dependencies') {
             when { branch 'main' }
             steps {
-                echo "📦 Installing npm dependencies"
+                echo "📦 Installing npm packages"
                 sh 'npm install'
             }
         }
@@ -29,15 +30,15 @@ pipeline {
         stage('Build Docker Image') {
             when { branch 'main' }
             steps {
-                echo "🐳 Building Docker image via Compose"
-                sh "${env.COMPOSE_CMD} build"
+                echo "🐳 Building Docker image"
+                sh "${COMPOSE_CMD} build"
             }
         }
 
         stage('Deploy Application') {
             when { branch 'main' }
             steps {
-                echo "🚀 Deploying with Docker Compose"
+                echo "🚀 Deploying app via Docker Compose"
                 sh '''
                     ${COMPOSE_CMD} down
                     ${COMPOSE_CMD} up -d --build
@@ -48,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment to production successful"
+            echo "✅ CI/CD pipeline executed successfully on main branch"
         }
         failure {
-            echo "❌ Build or deploy failed"
+            echo "❌ CI/CD pipeline failed. Check above logs for issues."
         }
     }
 }
