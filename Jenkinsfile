@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'  // or node:20
+            args '-u root'   // Run as root inside container (to avoid permission issues)
+        }
+    }
 
     options {
         skipDefaultCheckout(true)
@@ -7,9 +12,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo "Checking out main branch"
                 checkout scm
@@ -17,9 +20,7 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo "Installing npm packages"
                 sh 'npm install'
@@ -27,9 +28,7 @@ pipeline {
         }
 
         stage('Build') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo "Building the application"
                 sh 'npm run build || echo "No build script, skipping..."'
@@ -37,9 +36,7 @@ pipeline {
         }
 
         stage('Test') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo "Running tests"
                 sh 'npm test || echo "No test script, skipping..."'
@@ -47,23 +44,18 @@ pipeline {
         }
 
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
-                echo "Deploying the app using PM2"
-                sh '''
-                    pm2 stop all || true
-                    pm2 start index.js --name pavan-app || pm2 restart pavan-app
-                    pm2 save
-                '''
+                echo "Simulated deploy: PM2 not available in container"
+                // Replace with actual deploy steps if you're deploying to another server
+                sh 'echo "Deploy complete"'
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build and deploy completed successfully on main branch."
+            echo "✅ Build and (simulated) deploy completed successfully on main branch."
         }
         failure {
             echo "❌ Build or deploy failed."
