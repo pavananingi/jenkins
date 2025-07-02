@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'  // or node:20
-            args '-u root'   // Run as root inside container (to avoid permission issues)
-        }
-    }
+    agent any
 
     options {
         skipDefaultCheckout(true)
@@ -31,7 +26,7 @@ pipeline {
             when { branch 'main' }
             steps {
                 echo "Building the application"
-                sh 'npm run build || echo "No build script, skipping..."'
+                sh 'npm run build || echo "No build script found. Skipping build..."'
             }
         }
 
@@ -39,26 +34,29 @@ pipeline {
             when { branch 'main' }
             steps {
                 echo "Running tests"
-                sh 'npm test || echo "No test script, skipping..."'
+                sh 'npm test || echo "No tests found. Skipping tests..."'
             }
         }
 
         stage('Deploy') {
             when { branch 'main' }
             steps {
-                echo "Simulated deploy: PM2 not available in container"
-                // Replace with actual deploy steps if you're deploying to another server
-                sh 'echo "Deploy complete"'
+                echo "Deploying with PM2"
+                sh '''
+                    pm2 stop pavan-app || true
+                    pm2 start index.js --name pavan-app
+                    pm2 save
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build and (simulated) deploy completed successfully on main branch."
+            echo "✅ Build and deploy successful on main branch"
         }
         failure {
-            echo "❌ Build or deploy failed."
+            echo "❌ Build or deploy failed"
         }
     }
 }
