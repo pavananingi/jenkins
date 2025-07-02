@@ -5,11 +5,15 @@ pipeline {
         skipDefaultCheckout(true)
     }
 
+    environment {
+        COMPOSE_CMD = 'docker compose' // use 'docker-compose' if using older binary
+    }
+
     stages {
         stage('Checkout') {
             when { branch 'main' }
             steps {
-                echo "Checking out main branch"
+                echo "🔄 Checking out main branch"
                 checkout scm
             }
         }
@@ -17,35 +21,26 @@ pipeline {
         stage('Install Dependencies') {
             when { branch 'main' }
             steps {
-                echo "Installing npm packages"
+                echo "📦 Installing npm dependencies"
                 sh 'npm install'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             when { branch 'main' }
             steps {
-                echo "Building the application"
-                sh 'npm run build || echo "No build script found. Skipping build..."'
+                echo "🐳 Building Docker image via Compose"
+                sh "${env.COMPOSE_CMD} build"
             }
         }
 
-        stage('Test') {
+        stage('Deploy Application') {
             when { branch 'main' }
             steps {
-                echo "Running tests"
-                sh 'npm test || echo "No tests found. Skipping tests..."'
-            }
-        }
-
-        stage('Deploy') {
-            when { branch 'main' }
-            steps {
-                echo "Deploying with PM2"
+                echo "🚀 Deploying with Docker Compose"
                 sh '''
-                    pm2 stop pavan-app || true
-                    pm2 start index.js --name pavan-app
-                    pm2 save
+                    ${COMPOSE_CMD} down
+                    ${COMPOSE_CMD} up -d --build
                 '''
             }
         }
@@ -53,7 +48,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Build and deploy successful on main branch"
+            echo "✅ Deployment to production successful"
         }
         failure {
             echo "❌ Build or deploy failed"
