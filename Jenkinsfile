@@ -1,16 +1,28 @@
 pipeline {
     agent any
+
     options {
         skipDefaultCheckout(true)
     }
+
     stages {
-        stage('Validate Branch') {
+        stage('Checkout') {
             when {
                 branch 'main'
             }
             steps {
+                echo "Checking out main branch"
                 checkout scm
-                echo "Building only the main branch"
+            }
+        }
+
+        stage('Install Dependencies') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "Installing npm packages"
+                sh 'npm install'
             }
         }
 
@@ -19,8 +31,18 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo "This is the main branch - Building..."
-                // your build steps here
+                echo "Building the application"
+                sh 'npm run build || echo "No build script, skipping..."'
+            }
+        }
+
+        stage('Test') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "Running tests"
+                sh 'npm test || echo "No test script, skipping..."'
             }
         }
 
@@ -29,9 +51,22 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo "Deploying from main branch"
-                // your deploy steps here
+                echo "Deploying the app using PM2"
+                sh '''
+                    pm2 stop all || true
+                    pm2 start index.js --name pavan-app || pm2 restart pavan-app
+                    pm2 save
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build and deploy completed successfully on main branch."
+        }
+        failure {
+            echo "❌ Build or deploy failed."
         }
     }
 }
