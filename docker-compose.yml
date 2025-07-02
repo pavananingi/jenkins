@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/etc/traefik/traefik.yml"
+      - "./traefik/dynamic.yml:/etc/traefik/dynamic.yml"
+      - "./traefik/acme.json:/acme.json"
+    networks:
+      - traefik
+
+  service1:
+    build: ./service1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.service1.rule=Host(`service1.localhost`)"
+      - "traefik.http.services.service1.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
+
