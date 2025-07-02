@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pavan's Webpage</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #000000, #1f1f1f);
+      color: white;
+    }
+
+    header {
+      background-color: #282828;
+      padding: 20px;
+      text-align: center;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    header h1 {
+      font-size: 3em;
+      color: #00ffe1;
+    }
+
+    section {
+      padding: 40px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .card {
+      background-color: #333;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 225, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    h2 {
+      color: #00ffe1;
+    }
+
+    footer {
+      background-color: #222;
+      text-align: center;
+      padding: 15px;
+      position: relative;
+    }
+
+    .btn {
+      background: #00ffe1;
+      border: none;
+      padding: 10px 20px;
+      color: #000;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #00cfc1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to Pavan's Webpage</h1>
+  </header>
+
+  <section>
+    <div class="card">
+      <h2>About Me</h2>
+      <p>Hi, I'm Pavan! I'm passionate about cloud, DevOps, and web development. I enjoy learning new technologies and building amazing applications.</p>
+    </div>
+
+    <div class="card">
+      <h2>Skills</h2>
+      <ul>
+        <li>AWS & DevOps</li>
+        <li>Docker & Kubernetes</li>
+        <li>Node.js, React, HTML, CSS</li>
+        <li>Linux, GitHub Actions, Jenkins</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Contact</h2>
+      <p>Email: <a href="mailto:pavan@example.com" style="color:#00ffe1;">pavan@example.com</a></p>
+      <button class="btn" onclick="alert('Thank you for reaching out!')">Say Hello</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Pavan Kalyan Aningi. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
