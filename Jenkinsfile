@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        BRANCH_NAME = "${env.BRANCH_NAME}"
-        COMPOSE_PROJECT_NAME = "socketio-${env.BRANCH_NAME}"
-        TRAEFIK_NETWORK = "webnet"
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -14,20 +8,22 @@ pipeline {
             }
         }
 
-        stage('Validate Branch') {
-            when {
-                not {
-                    anyOf {
-                        branch 'main'
-                        branch 'dev'
-                    }
-                }
-            }
+        stage('Identify Branch') {
             steps {
-                echo "Skipping branch ${env.BRANCH_NAME}. Only 'main' and 'dev' are allowed."
                 script {
-                    currentBuild.result = 'SUCCESS'
-                    error("Aborted.")
+                    if (env.GIT_BRANCH ==~ /origin\/main/) {
+                        echo "Main branch detected."
+                        BRANCH = "main"
+                        DOMAIN = "prod.pavan.today"
+                    } else if (env.GIT_BRANCH ==~ /origin\/dev/) {
+                        echo "Dev branch detected."
+                        BRANCH = "dev"
+                        DOMAIN = "dev.pavan.today"
+                    } else {
+                        echo "Skipping build: only 'main' and 'dev' branches are allowed."
+                        currentBuild.result = 'SUCCESS'
+                        error("Build aborted.")
+                    }
                 }
             }
         }
@@ -36,9 +32,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                        docker network inspect ${TRAEFIK_NETWORK} >/dev/null 2>&1 || docker network create ${TRAEFIK_NETWORK}
-                        export BRANCH_NAME=${env.BRANCH_NAME}
-                        docker compose -p ${COMPOSE_PROJECT_NAME} up -d --build
+                        docker network inspect webnet >/dev/null 2>&1 || docker network create webnet
+
+                        BRANCH_NAME=${BRANCH} \
+                        DOMAIN_NAME=${DOMAIN} \
+                        docker compose -p socketio-${BRANCH} up -d --build
                     """
                 }
             }
@@ -47,8 +45,8 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
-                    echo "Health check for ${env.BRANCH_NAME}"
-                    sh 'curl -s --retry 5 --retry-delay 3 http://localhost || echo "Not reachable"'
+                    echo "Checking service at http://${DOMAIN}"
+                    sh "curl -s --retry 5 --retry-delay 3 http://${DOMAIN} || echo 'Health check failed'"
                 }
             }
         }
@@ -56,7 +54,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline completed for branch ${env.BRANCH_NAME}"
+            echo "Pipeline for branch ${env.GIT_BRANCH} completed."
         }
     }
 }
